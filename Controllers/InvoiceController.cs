@@ -41,7 +41,6 @@ namespace FaturaApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Veritabanı için Program nesnesi oluşturma
             var invoice = new Invoice
             {
                 InvoiceId = invoiceDto.InvoiceId,
@@ -54,7 +53,6 @@ namespace FaturaApi.Controllers
             _context.Invoices.Add(invoice);
             _context.SaveChanges();
 
-            // Başarıyla oluşturulan programın ID’siyle dönüyoruz.
             return CreatedAtAction(nameof(GetInvoiceById), new { id = invoice.Id }, invoice);
         }
 
