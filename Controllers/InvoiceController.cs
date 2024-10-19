@@ -1,9 +1,9 @@
 ﻿using FaturaApi.Data;
 using FaturaApi.Dto;
 using FaturaApi.Entities;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace FaturaApi.Controllers
 {
@@ -19,7 +19,7 @@ namespace FaturaApi.Controllers
             _context = context;
         }
         [HttpGet("{id}")]
-        public IActionResult GetProgramById(int id)
+        public IActionResult GetInvoiceById(int id)
         {
             var invoice = _context.Invoices
                 .Include(p => p.User)
@@ -45,6 +45,7 @@ namespace FaturaApi.Controllers
             var invoice = new Invoice
             {
                 InvoiceId = invoiceDto.InvoiceId,
+                UserId = invoiceDto.UserId,
                 InvoiceDate = invoiceDto.InvoiceDate,
                 TotalAmount = (int)invoiceDto.TotalAmount,
                 Status = invoiceDto.Status
@@ -54,7 +55,50 @@ namespace FaturaApi.Controllers
             _context.SaveChanges();
 
             // Başarıyla oluşturulan programın ID’siyle dönüyoruz.
-            return CreatedAtAction(nameof(GetProgramById), new { id = invoice.Id }, invoice);
+            return CreatedAtAction(nameof(GetInvoiceById), new { id = invoice.Id }, invoice);
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult UpdateInvoice(int id, [FromBody] DtoAddInvoice invoiceDto)
+        {
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+
+            var invoice = _context.Invoices.Find(id);
+            if (invoice == null)
+            {
+                return NotFound($"!!! {id} not found.");
+            }
+
+
+            invoice.InvoiceId = invoiceDto.InvoiceId;
+            invoice.InvoiceDate = invoiceDto.InvoiceDate;
+            invoice.TotalAmount = (int)invoiceDto.TotalAmount;
+            invoice.Status = invoiceDto.Status;
+
+            _context.Invoices.Update(invoice);
+            _context.SaveChanges();
+
+
+            return Ok(invoice);
+        }
+        [HttpDelete("{id}")]
+        public IActionResult DeleteInvoice(int id)
+        {
+            var invoice = _context.Invoices.Find(id);
+            if (invoice == null)
+            {
+                return NotFound($"Fatura ID {id} bulunamadı.");
+            }
+
+            _context.Invoices.Remove(invoice);
+            _context.SaveChanges();
+
+            return NoContent();
         }
 
     }
