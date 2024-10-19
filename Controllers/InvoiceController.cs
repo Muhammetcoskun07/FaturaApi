@@ -34,7 +34,7 @@ namespace FaturaApi.Controllers
             return Ok(invoice);
         }
         [HttpGet("AllList")]
-        public ActionResult<List<Invoice>> GetAllInvoices()
+        public ActionResult<List<DtoAddInvoice>> GetAllInvoices()
         {
             var invoices = _context.Invoices
               .Include(i => i.Payments)
