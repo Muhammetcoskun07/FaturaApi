@@ -152,7 +152,74 @@ namespace FaturaApi.Controllers
 
             return NoContent();
         }
-        
+
+        [HttpGet("Search")]
+        public ActionResult<List<object>> SearchInvoices(string searchTerm)
+        {
+            // Eğer arama terimi boşsa tüm faturaları döndür
+            if (string.IsNullOrEmpty(searchTerm))
+            {
+                return Ok(_context.Invoices
+                    .Include(i => i.User)
+                    .Include(i => i.Client)
+                    .Select(i => new
+                    {
+                        i.InvoiceId,
+                        i.InvoiceDate,
+                        i.TotalAmount,
+                        i.Status,
+                        User = new
+                        {
+                            i.User.UserId,
+                            i.User.Name,
+                            i.User.Email,
+                        },
+                        Client = new
+                        {
+                            i.Client.Id,
+                            i.Client.Name,
+                            i.Client.Email,
+                            i.Client.Phone,
+                            i.Client.City,
+                            i.Client.PostCode,
+                            i.Client.Country,
+                            i.Client.StreetAddress
+                        }
+                    }).ToList());
+            }
+
+            var invoices = _context.Invoices
+                .Include(i => i.User)
+                .Include(i => i.Client)
+                .Where(i => i.Client.Name.Contains(searchTerm) || i.User.Name.Contains(searchTerm))
+                .Select(i => new
+                {
+                    i.InvoiceId,
+                    i.InvoiceDate,
+                    i.TotalAmount,
+                    i.Status,
+                    User = new
+                    {
+                        i.User.UserId,
+                        i.User.Name,
+                        i.User.Email,
+                    },
+                    Client = new
+                    {
+                        i.Client.Id,
+                        i.Client.Name,
+                        i.Client.Email,
+                        i.Client.Phone,
+                        i.Client.City,
+                        i.Client.PostCode,
+                        i.Client.Country,
+                        i.Client.StreetAddress
+                    }
+                })
+                .ToList();
+
+            return Ok(invoices);
+        }
 
     }
 }
