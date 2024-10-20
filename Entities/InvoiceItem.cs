@@ -2,10 +2,9 @@
 {
 	public class InvoiceItem
 	{
-		public int InvoiceId { get; set; } // Foreign Key to Invoice
-		public int ItemId { get; set; }     // Foreign Key to Item
+		public int InvoiceId { get; set; } 
+		public int ItemId { get; set; }     
 
-		// Navigation Properties
 		public Invoice Invoice { get; set; }
 		public Item Item { get; set; }
 	}

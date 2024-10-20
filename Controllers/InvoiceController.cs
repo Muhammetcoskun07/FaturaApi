@@ -34,31 +34,60 @@ namespace FaturaApi.Controllers
             return Ok(invoice);
         }
         [HttpGet("AllList")]
-        public ActionResult<List<DtoAddInvoice>> GetAllInvoices()
+        public ActionResult<List<object>> GetAllInvoices()
         {
             var invoices = _context.Invoices
-              .Include(i => i.Payments)
-              .Include(i => i.InvoiceItems)
-              .Select(i => new {
-                  i.InvoiceId,
-                  i.InvoiceDate,
-                  i.DueDate,
-                  i.TotalAmount,
-                  i.Status,
-                  User = new
-                  {
-                      i.User.UserId,
-                      i.User.Name,
-                  }
-
-
-              })
-              .ToList(); ;
+                .Include(i => i.Payments)
+                .Include(i => i.InvoiceItems)
+                .ThenInclude(ii => ii.Item)
+                .Include(i => i.User)
+                .Include(i => i.Client)
+                .Select(i => new
+                {
+                    i.InvoiceId,
+                    i.InvoiceDate,
+                    i.DueDate,
+                    i.TotalAmount,
+                    i.Status,
+                    User = new
+                    {
+                        i.User.UserId,
+                        i.User.Name,
+                        i.User.Email,
+                    },
+                    Client = new
+                    {
+                        i.Client.Id,
+                        i.Client.Name,
+                        i.Client.Email,
+                        i.Client.Phone,
+                        i.Client.City,
+                        i.Client.PostCode,
+                        i.Client.Country,
+                        i.Client.StreetAddress
+                    },
+                    InvoiceItems = i.InvoiceItems.Select(ii => new
+                    {
+                        ii.Item.Id,
+                        ii.Item.Name,
+                        ii.Item.Price,
+                        ii.Item.Quantity,
+                        ii.Item.Total,
+                        ii.Item.PaymentMethod
+                    }).ToList(),
+                    Payments = i.Payments.Select(p => new
+                    {
+                        p.PaymentId,
+                        p.Amount,
+                        p.PaymentDate
+                    }).ToList()
+                })
+                .ToList();
 
             return Ok(invoices);
         }
-       
-               [HttpPost]
+
+        [HttpPost]
         public IActionResult CreateInvoice([FromBody] DtoAddInvoice invoiceDto)
         {
             if (!ModelState.IsValid)
@@ -123,6 +152,7 @@ namespace FaturaApi.Controllers
 
             return NoContent();
         }
+        
 
     }
 }

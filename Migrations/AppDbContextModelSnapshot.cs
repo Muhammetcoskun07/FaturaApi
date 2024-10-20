@@ -71,7 +71,7 @@ namespace FaturaApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("ClientId")
+                    b.Property<int>("ClientId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("DueDate")
@@ -221,15 +221,19 @@ namespace FaturaApi.Migrations
 
             modelBuilder.Entity("FaturaApi.Entities.Invoice", b =>
                 {
-                    b.HasOne("FaturaApi.Entities.Client", null)
+                    b.HasOne("FaturaApi.Entities.Client", "Client")
                         .WithMany("Invoices")
-                        .HasForeignKey("ClientId");
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("FaturaApi.Entities.User", "User")
                         .WithMany("Invoices")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Client");
 
                     b.Navigation("User");
                 });

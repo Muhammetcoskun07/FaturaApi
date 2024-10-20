@@ -13,8 +13,10 @@ namespace FaturaApi.Entities
 		public string Status { get; set; } // Ödendi, Beklemede, İptal
 
 		// Navigation Properties
-		public User User { get; set; } // Faturayı kesen kullanıcı
-		public List<Payment> Payments { get; set; } = new List<Payment>();
+		public User User { get; set; } 
+		public Client Client { get; set; }
+        public int ClientId { get; set; }
+        public List<Payment> Payments { get; set; } = new List<Payment>();
 		public List<InvoiceItem> InvoiceItems { get; set; } = new List<InvoiceItem>(); // Many-to-Many relation
 	}
 }
