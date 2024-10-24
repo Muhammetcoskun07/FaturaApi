@@ -4,6 +4,8 @@ using FaturaApi.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
+using System.Net.Mail;
+using System.Net;
 
 namespace FaturaApi.Controllers
 {
@@ -18,21 +20,7 @@ namespace FaturaApi.Controllers
         {
             _context = context;
         }
-        [HttpGet("{id}")]
-        public IActionResult GetInvoiceById(int id)
-        {
-            var invoice = _context.Invoices
-                .Include(p => p.User)
-                .Select(t => new { t.InvoiceId, t.InvoiceDate, t.TotalAmount, t.Status, })
-                .FirstOrDefault(p => p.InvoiceId == id);
-
-            if (invoice == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(invoice);
-        }
+        
         [HttpGet("AllList")]
         public ActionResult<List<object>> GetAllInvoices()
         {
@@ -110,11 +98,56 @@ namespace FaturaApi.Controllers
 				Status = invoiceDto.Status
 			};
 
+
 			_context.Invoices.Add(invoice);
 			_context.SaveChanges();
 
-			return CreatedAtAction(nameof(GetInvoiceWithClient), new { id = invoice.InvoiceId }, invoice);
-		}
+        //    var invoiceDetails = $@"
+        //    <h1>Fatura Detayları</h1>
+        //    <p><strong>Fatura Adı:</strong> {invoice.InvoiceName}</p>
+        //    <p><strong>Fatura Tarihi:</strong> {invoice.CreatedTime.ToShortDateString()}</p>
+        //    <p><strong>Ödeme Durumu:</strong> {invoice.PaymentStatus}</p>
+        //    <p><strong>Son Ödeme Tarihi:</strong> {invoice.PaymentDue.ToShortDateString()}</p>
+        //    <p><strong>Açıklama:</strong> {invoice.Description}</p>
+        //    <h2>Ürünler</h2>
+        //    <ul>
+        //";
+
+
+        //    foreach (var item in invoice.Items)
+        //    {
+        //        invoiceDetails += $@"
+        //        <li>
+        //            {item.Name} - {item.Quantity} x {item.Price:C} = {item.Total:C}
+        //        </li>";
+        //    }
+
+        //    invoiceDetails += "</ul>";
+
+
+        //    var smtpClient = new SmtpClient("smtp.eu.mailgun.org", 587)
+        //    {
+        //        Credentials = new NetworkCredential("postmaster@bildirim.bariscakdi.com.tr",
+        //            "8eac27c024c6133c1ee30867d050a18f-a26b1841-8a6f61d9"),
+        //        EnableSsl = true
+        //    };
+
+        //    var mailMessage = new MailMessage()
+        //    {
+        //        From = new MailAddress("postmaster@bildirim.bariscakdi.com.tr", "Invoice App"),
+        //        Subject = "Yeni Fatura Bilgileri",
+        //        Body = invoiceDetails,
+        //        IsBodyHtml = true
+        //    };
+
+        //    mailMessage.To.Add(new MailAddress(client.Email, client.Name));
+
+        //    smtpClient.Send(mailMessage);
+
+            return Ok(new { message = "Fatura başarıyla kaydedildi" });
+        }
+
+		
 
 
 		[HttpPut("{id}")]
@@ -134,7 +167,6 @@ namespace FaturaApi.Controllers
             }
 
 
-            invoice.InvoiceId = invoiceDto.InvoiceId;
             invoice.InvoiceDate = invoiceDto.InvoiceDate;
             invoice.TotalAmount = (int)invoiceDto.TotalAmount;
             invoice.Status = invoiceDto.Status;
@@ -267,6 +299,7 @@ namespace FaturaApi.Controllers
 
             return Ok(invoices);
         }
-
+        
+        
     }
 }
