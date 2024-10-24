@@ -14,7 +14,6 @@ namespace FaturaApi.Entities
 
 		// Navigation Properties
 		public User User { get; set; } 
-		public Client Client { get; set; }
         public int ClientId { get; set; }
         public List<Payment> Payments { get; set; } = new List<Payment>();
 		public List<InvoiceItem> InvoiceItems { get; set; } = new List<InvoiceItem>(); // Many-to-Many relation
