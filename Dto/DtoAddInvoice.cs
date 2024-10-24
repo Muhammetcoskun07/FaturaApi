@@ -10,5 +10,6 @@
 		public DateTime InvoiceDate { get; set; }
 
 		public string Status { get; set; }
+		public int ClientId { get; internal set; }
 	}
 }

@@ -87,30 +87,37 @@ namespace FaturaApi.Controllers
             return Ok(invoices);
         }
 
-        [HttpPost]
-        public IActionResult CreateInvoice([FromBody] DtoAddInvoice invoiceDto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+		[HttpPost("CreateInvoice")]
+		public IActionResult CreateInvoiceWithClient([FromBody] DtoAddInvoice invoiceDto)
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
 
-            var invoice = new Invoice
-            {
-                InvoiceId = invoiceDto.InvoiceId,
-                UserId = invoiceDto.UserId,
-                InvoiceDate = invoiceDto.InvoiceDate,
-                TotalAmount = (int)invoiceDto.TotalAmount,
-                Status = invoiceDto.Status
-            };
+			var client = _context.Clients.FirstOrDefault(c => c.Id == invoiceDto.ClientId);
+			if (client == null)
+			{
+				return NotFound("Belirtilen müşteri bulunamadı.");
+			}
 
-            _context.Invoices.Add(invoice);
-            _context.SaveChanges();
+			var invoice = new Invoice
+			{
+				UserId = invoiceDto.UserId,
+				ClientId = invoiceDto.ClientId,  // Client bilgisi ekleniyor
+				InvoiceDate = invoiceDto.InvoiceDate,
+				TotalAmount = invoiceDto.TotalAmount,
+				Status = invoiceDto.Status
+			};
 
-            return CreatedAtAction(nameof(GetInvoiceById), new { id = invoice.Id }, invoice);
-        }
+			_context.Invoices.Add(invoice);
+			_context.SaveChanges();
 
-        [HttpPut("{id}")]
+			return CreatedAtAction(nameof(GetInvoiceWithClient), new { id = invoice.InvoiceId }, invoice);
+		}
+
+
+		[HttpPut("{id}")]
         public IActionResult UpdateInvoice(int id, [FromBody] DtoAddInvoice invoiceDto)
         {
 
@@ -152,8 +159,48 @@ namespace FaturaApi.Controllers
 
             return NoContent();
         }
+		[HttpGet("GetInvoice/{id}")]
+		public IActionResult GetInvoiceWithClient(int id)
+		{
+			var invoice = _context.Invoices
+				.Include(i => i.User)
+				.Include(i => i.Client)  // Client bilgilerini dahil ediyoruz
+				.Select(i => new
+				{
+					i.InvoiceId,
+					i.InvoiceDate,
+					i.TotalAmount,
+					i.Status,
+					User = new
+					{
+						i.User.UserId,
+						i.User.Name,
+						i.User.Email
+					},
+					Client = new
+					{
+						i.Client.Id,
+						i.Client.Name,
+						i.Client.Email,
+						i.Client.Phone,
+						i.Client.City,
+						i.Client.PostCode,
+						i.Client.Country,
+						i.Client.StreetAddress
+					}
+				})
+				.FirstOrDefault(i => i.InvoiceId == id);
 
-        [HttpGet("Search")]
+			if (invoice == null)
+			{
+				return NotFound($"Fatura ID {id} bulunamadı.");
+			}
+
+			return Ok(invoice);
+		}
+
+
+		[HttpGet("Search")]
         public ActionResult<List<object>> SearchInvoices(string searchTerm)
         {
             // Eğer arama terimi boşsa tüm faturaları döndür
