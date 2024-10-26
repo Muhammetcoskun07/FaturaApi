@@ -20,10 +20,12 @@ namespace FaturaApi.Controllers
         {
             _context = context;
         }
-        
+
         [HttpGet("AllList")]
         public ActionResult<List<object>> GetAllInvoices()
         {
+            _context.ChangeTracker.Clear();
+
             var invoices = _context.Invoices
                 .Include(i => i.Payments)
                 .Include(i => i.InvoiceItems)
@@ -75,7 +77,9 @@ namespace FaturaApi.Controllers
             return Ok(invoices);
         }
 
-		[HttpPost("CreateInvoice")]
+
+
+        [HttpPost("CreateInvoice")]
 		public IActionResult CreateInvoiceWithClient([FromBody] DtoAddInvoice invoiceDto)
 		{
 			if (!ModelState.IsValid)
@@ -117,6 +121,7 @@ namespace FaturaApi.Controllers
         //    foreach (var item in invoice.Items)
         //    {
         //        invoiceDetails += $@"
+
         //        <li>
         //            {item.Name} - {item.Quantity} x {item.Price:C} = {item.Total:C}
         //        </li>";
